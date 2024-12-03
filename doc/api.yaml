@@ -24,7 +24,7 @@ components:
       scheme: bearer
 
   schemas:
-     User:
+    User:
       type: object
       description: User details.
       properties:
@@ -39,7 +39,6 @@ components:
           minLength: 3
           maxLength: 16
           example: "Maria"
-
     Conversation:
       type: object
       description: Details of a conversation.
@@ -64,7 +63,6 @@ components:
           format: date-time
           description: Timestamp of the last message.
           example: "2023-11-19T14:48:00.000Z"
-
     Message:
       type: object
       description: Details of a message.
