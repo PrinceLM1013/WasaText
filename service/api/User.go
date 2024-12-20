@@ -135,6 +135,46 @@ func (rt *_router) getMyConversations(w http.ResponseWriter, r *http.Request, ps
 	}
 }
 
+// getConversation handles GET requests to retrieve a conversation by ID
+func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	// Get the conversation ID from the URL parameters
+	conversationID := ps.ByName("id")
+
+	// Validate the conversation ID
+	if conversationID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_, err := w.Write([]byte("Conversation ID is required"))
+		if err != nil {
+			ctx.Logger.WithError(err).Error("Error writing response")
+		}
+		return
+	}
+
+	// Authorize the request
+	token := r.Header.Get("Authorization")
+	if !rt.db.Authorize(conversationID, token, w, ctx) {
+		return
+	}
+
+	// Retrieve the conversation from the database
+	conversation, err := rt.db.GetConversation(conversationID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			ctx.Logger.WithError(err).Error("Error writing response")
+		}
+		return
+	}
+
+	// Write the conversation to the response
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(conversation)
+	if err != nil {
+		ctx.Logger.WithError(err).Error("Error encoding response")
+	}
+}
+
 // Leave a group
 func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	groupID := ps.ByName("id")
