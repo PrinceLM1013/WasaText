@@ -24,7 +24,7 @@ components:
       scheme: bearer
 
   schemas:
-     User:
+    User:
       type: object
       description: User details.
       properties:
@@ -39,7 +39,6 @@ components:
           minLength: 3
           maxLength: 16
           example: "Maria"
-
     Conversation:
       type: object
       description: Details of a conversation.
@@ -144,8 +143,25 @@ paths:
       responses:
         '200':
           description: Name updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
         '400':
           description: Username already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining the issue.
+                    example: "The username is already taken."
 
   /users/me/photo:
     put:
@@ -168,6 +184,14 @@ paths:
       responses:
         '200':
           description: Photo updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
 
   /conversations:
     get:
@@ -208,20 +232,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    messageId:
-                      type: string
-                      example: "message123"
-                    sender:
-                      type: string
-                      example: "John"
-                    content:
-                      type: string
-                      example: "Hello there!"
-                    timestamp:
-                      type: string
-                      format: date-time
+                  $ref: "#/components/schemas/Message"
 
   /messages:
     post:
@@ -250,6 +261,14 @@ paths:
       responses:
         '201':
           description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
 
   /messages/{id}/forward:
     post:
@@ -280,6 +299,14 @@ paths:
       responses:
         '201':
           description: Message forwarded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
 
   /messages/{id}/comment:
     post:
@@ -309,6 +336,14 @@ paths:
       responses:
         '201':
           description: Reaction added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
     delete:
       tags:
         - Messages
@@ -325,6 +360,14 @@ paths:
       responses:
         '200':
           description: Reaction removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
 
   /groups/{id}/leave:
     post:
@@ -343,6 +386,14 @@ paths:
       responses:
         '200':
           description: Left group successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
 
   /groups/{id}/photo:
     put:
@@ -372,3 +423,11 @@ paths:
       responses:
         '200':
           description: Group photo updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
