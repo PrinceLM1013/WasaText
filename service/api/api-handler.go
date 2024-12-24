@@ -27,10 +27,13 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.POST("/messages/:id/forward", rt.wrap(rt.forwardMessage))
 	rt.router.POST("/messages/:id/comment", rt.wrap(rt.commentMessage))
 	rt.router.DELETE("/messages/:id/comment", rt.wrap(rt.uncommentMessage))
+	rt.router.DELETE("/messages/:id/delete", rt.wrap(rt.deleteMessage))
 
 	// Group routes
 	rt.router.POST("/groups/:id/leave", rt.wrap(rt.leaveGroup))
 	rt.router.PUT("/groups/:id/photo", rt.wrap(rt.setGroupPhoto))
+	rt.router.POST("/groups/:id/add", rt.wrap(rt.addToGroup))
+	rt.router.PUT("/groups/:id/name", rt.wrap(rt.setGroupName))
 
 	return rt.router
 }
