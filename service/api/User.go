@@ -175,16 +175,6 @@ func (rt *_router) getConversation(w http.ResponseWriter, r *http.Request, ps ht
 	}
 }
 
-// Leave a group
-func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
-	groupID := ps.ByName("id")
-	token := r.Header.Get("Authorization")
-	is_valid := rt.db.Authorize(groupID, token, w, ctx)
-	if is_valid {
-		rt.db.LeaveGroup(groupID, w, ctx)
-	}
-}
-
 // Send a new message
 func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	var message models.Message
@@ -285,6 +275,53 @@ func (rt *_router) uncommentMessage(w http.ResponseWriter, r *http.Request, ps h
 	}
 }
 
+// Delete a message
+func (rt *_router) deleteMessage(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	messageID := ps.ByName("id") // Get the message ID from the URL parameters
+	if messageID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_, err := w.Write([]byte("Message ID is required"))
+		if err != nil {
+			ctx.Logger.WithError(err).Error("Error writing response")
+		}
+		return
+	}
+
+	// Authorize the request
+	token := r.Header.Get("Authorization")
+	if !rt.db.Authorize(messageID, token, w, ctx) {
+		return
+	}
+
+	// Delete the message from the database
+	err := rt.db.DeleteMessage(messageID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			ctx.Logger.WithError(err).Error("Error writing response")
+		}
+		return
+	}
+
+	// Send a success response
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write([]byte("Message deleted successfully"))
+	if err != nil {
+		ctx.Logger.WithError(err).Error("Error writing response")
+	}
+}
+
+// Leave a group
+func (rt *_router) leaveGroup(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	groupID := ps.ByName("id")
+	token := r.Header.Get("Authorization")
+	is_valid := rt.db.Authorize(groupID, token, w, ctx)
+	if is_valid {
+		rt.db.LeaveGroup(groupID, w, ctx)
+	}
+}
+
 // Update group photo
 func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	groupID := ps.ByName("id")
@@ -338,5 +375,127 @@ func (rt *_router) setGroupPhoto(w http.ResponseWriter, r *http.Request, ps http
 	is_valid := rt.db.Authorize(groupID, token, w, ctx)
 	if is_valid {
 		rt.db.SetGroupPhoto(groupID, fileBytes, w, ctx)
+	}
+}
+
+// Add a user to a group
+func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	groupID := ps.ByName("id") // Get the group ID from the URL parameters
+	if groupID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_, err := w.Write([]byte("Group ID is required"))
+		if err != nil {
+			ctx.Logger.WithError(err).Error("Error writing response")
+		}
+		return
+	}
+
+	var request struct {
+		Username string `json:"username" validate:"required"`
+	}
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&request); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			ctx.Logger.WithError(err).Error("Error writing response")
+		}
+		return
+	}
+
+	// Validate the request payload
+	validationErr := validate.Struct(request)
+	if validationErr != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, err := w.Write([]byte(validationErr.Error()))
+		if err != nil {
+			ctx.Logger.WithError(err).Error("Error writing response")
+		}
+		return
+	}
+
+	// Authorize the request
+	token := r.Header.Get("Authorization")
+	if !rt.db.Authorize(groupID, token, w, ctx) {
+		return
+	}
+
+	// Add the user to the group
+	err := rt.db.AddUserToGroup(groupID, request.Username)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			ctx.Logger.WithError(err).Error("Error writing response")
+		}
+		return
+	}
+
+	// Send a success response
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write([]byte("User added to group successfully"))
+	if err != nil {
+		ctx.Logger.WithError(err).Error("Error writing response")
+	}
+}
+
+// Update the name of a group
+func (rt *_router) setGroupName(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	groupID := ps.ByName("id") // Get the group ID from the URL parameters
+	if groupID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_, err := w.Write([]byte("Group ID is required"))
+		if err != nil {
+			ctx.Logger.WithError(err).Error("Error writing response")
+		}
+		return
+	}
+
+	var request struct {
+		NewName string `json:"newName" validate:"required,min=3,max=50"`
+	}
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&request); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			ctx.Logger.WithError(err).Error("Error writing response")
+		}
+		return
+	}
+
+	// Validate the new group name
+	validationErr := validate.Struct(request)
+	if validationErr != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, err := w.Write([]byte(validationErr.Error()))
+		if err != nil {
+			ctx.Logger.WithError(err).Error("Error writing response")
+		}
+		return
+	}
+
+	// Authorize the request
+	token := r.Header.Get("Authorization")
+	if !rt.db.Authorize(groupID, token, w, ctx) {
+		return
+	}
+
+	// Update the group name
+	err := rt.db.SetGroupName(groupID, request.NewName)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			ctx.Logger.WithError(err).Error("Error writing response")
+		}
+		return
+	}
+
+	// Send a success response
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write([]byte("Group name updated successfully"))
+	if err != nil {
+		ctx.Logger.WithError(err).Error("Error writing response")
 	}
 }
