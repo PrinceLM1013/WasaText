@@ -31,6 +31,8 @@ components:
         id:
           type: string
           description: Unique user identifier.
+          pattern: "^[a-zA-Z0-9_-]{12}$"
+          minLength: 12
           example: "abcdef012345"
         name:
           type: string
@@ -46,16 +48,21 @@ components:
         id:
           type: string
           description: Unique conversation identifier.
+          pattern: "^[a-zA-Z0-9_-]+$"
+          minLength: 1
           example: "conversation123"
         name:
           type: string
           description: Name of the conversation.
+          pattern: "^[a-zA-Z0-9_-]{1,255}$"
           minLength: 1
           maxLength: 255
           example: "Group Chat"
         lastMessage:
           type: string
           description: Last message preview.
+          pattern: "^.{0,100}$"
+          minLength: 0
           maxLength: 100
           example: "Hey, how are you?"
         timestamp:
@@ -70,16 +77,21 @@ components:
         id:
           type: string
           description: Unique message identifier.
+          pattern: "^[a-zA-Z0-9_-]+$"
+          minLength: 1
           example: "message123"
         sender:
           type: string
           description: Sender's username.
+          pattern: "^[a-zA-Z0-9_-]{1,16}$"
           minLength: 1
           maxLength: 16
           example: "John"
         content:
           type: string
           description: Message content.
+          pattern: "^.{0,500}$"
+          minLength: 1
           maxLength: 500
           example: "Hello there!"
         timestamp:
@@ -111,10 +123,14 @@ paths:
           content:
             application/json:
               schema:
+                description: The user identifier after a successful log-in.
                 type: object
                 properties:
+                  description: A unique identifier for the user
                   identifier:
                     type: string
+                    pattern: "^[a-zA-Z0-9_-]{12}$"
+                    minLength: 12
                     example: "abcdef012345"
 
   /users/me/name:
@@ -130,6 +146,7 @@ paths:
         content:
           application/json:
             schema:
+              description: Creating anew username
               type: object
               properties:
                 name:
@@ -145,8 +162,10 @@ paths:
           content:
             application/json:
               schema:
+                description: The success status of the name update
                 type: object
                 properties:
+                  description: Name update successful
                   success:
                     type: boolean
                     example: true
@@ -155,8 +174,10 @@ paths:
           content:
             application/json:
               schema:
+                description: The error message explaining the username already exists
                 type: object
                 properties:
+                  description: Username already exists
                   error:
                     type: string
                     description: Error message explaining the issue.
@@ -175,19 +196,26 @@ paths:
         content:
           multipart/form-data:
             schema:
+              description: Uploading a profile photo
               type: object
               properties:
+                description: The profile photo to be uploaded
                 photo:
                   type: string
                   format: binary
+                  minLength: 1
+                  maxLength: 10000000
+                  pattern: ".+"
       responses:
         '200':
           description: Photo updated successfully
           content:
             application/json:
               schema:
+                description: Photo update successful
                 type: object
                 properties:
+                  description: The success status of the photo update
                   success:
                     type: boolean
                     example: true
@@ -205,6 +233,7 @@ paths:
           content:
             application/json:
               schema:
+                description: The list of conversations
                 type: array
                 items:
                   $ref: "#/components/schemas/Conversation"
@@ -229,6 +258,7 @@ paths:
           content:
             application/json:
               schema:
+                description: The list of messages in the conversation
                 type: array
                 items:
                   $ref: "#/components/schemas/Message"
@@ -246,16 +276,23 @@ paths:
         content:
           application/json:
             schema:
+              description: Sending a new message
               type: object
               properties:
+                description: The conversation ID where the message will be sent and content of the message
                 conversationId:
                   type: string
                   description: Conversation ID where the message will be sent.
                   example: "conversation123"
+                  pattern: "^[a-zA-Z0-9_-]+$"
+                  minLength: 1
+                  maxLength: 50
                 content:
                   type: string
                   description: Content of the message.
+                  minLength: 1
                   maxLength: 500
+                  pattern: ".+"
                   example: "Hello!"
       responses:
         '201':
@@ -263,8 +300,10 @@ paths:
           content:
             application/json:
               schema:
+                description: Message sent successfully
                 type: object
                 properties:
+                  description: The success status of the message sending
                   success:
                     type: boolean
                     example: true
@@ -282,6 +321,9 @@ paths:
           required: true
           schema:
             type: string
+            pattern: "^[a-zA-Z0-9_-]+$"
+            minLength: 1
+            maxLength: 50
           description: Message ID to forward
       requestBody:
         description: Forwarding details
@@ -289,11 +331,15 @@ paths:
         content:
           application/json:
             schema:
+              description: Forwarding a message
               type: object
               properties:
                 toConversationId:
                   type: string
                   description: The ID of the conversation to forward the message to
+                  pattern: "^[a-zA-Z0-9_-]+$"
+                  minLength: 1
+                  maxLength: 50 
                   example: "conversation456"
       responses:
         '201':
@@ -301,8 +347,10 @@ paths:
           content:
             application/json:
               schema:
+                description: The success status of the message forwarding
                 type: object
                 properties:
+                  description: Message forwarded successfully
                   success:
                     type: boolean
                     example: true
@@ -311,8 +359,8 @@ paths:
     post:
       tags:
         - Messages
-      summary: React to a message
-      description: Allows an user to react to a message
+      summary: Add a like to a message
+      description: Allows an user to like a message
       operationId: commentMessage
       parameters:
         - name: id
@@ -320,34 +368,44 @@ paths:
           required: true
           schema:
             type: string
-          description: Message ID to react to
+            pattern: "^[a-zA-Z0-9_-]+$"
+            minLength: 1
+            maxLength: 50
+          description: Message ID to like to
       requestBody:
         description: Reaction details
         required: true
         content:
           application/json:
             schema:
+              description: Adding a like to a message
               type: object
               properties:
-                emoji:
+                type:
                   type: string
-                  example: "👍"
+                  description: Type of like (e.g., "like")
+                  pattern: "^[a-zA-Z]+$"
+                  minLength: 1
+                  maxLength: 20
+                  example: "like"
       responses:
         '201':
           description: Reaction added successfully
           content:
             application/json:
               schema:
+                description: The success status of the like adding
                 type: object
                 properties:
+                  description: Like added successfully
                   success:
                     type: boolean
                     example: true
     delete:
       tags:
         - Messages
-      summary: Remove a reaction
-      description: Allows an user to remove a reaction
+      summary: Remove a like from a message
+      description: Allows an user to remove a like from a message
       operationId: uncommentMessage
       parameters:
         - name: id
@@ -355,15 +413,19 @@ paths:
           required: true
           schema:
             type: string
-          description: Message ID to remove reaction from
+            pattern: "^[a-zA-Z0-9_-]+$"
+            minLength: 1
+            maxLength: 50
+          description: Message ID to remove like from
       responses:
         '200':
-          description: Reaction removed successfully
+          description: Like removed successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
+                  description: Like removed successfully
                   success:
                     type: boolean
                     example: true
@@ -381,6 +443,9 @@ paths:
           required: true
           schema:
             type: string
+            minLength: 1
+            maxLength: 50
+            pattern: "^[a-zA-Z0-9_-]+$"
           description: Message ID to delete.
       responses:
         '200':
@@ -388,8 +453,10 @@ paths:
           content:
             application/json:
               schema:
+                description: The success status of the message deletion
                 type: object
                 properties:
+                  description: Message deleted successfully
                   success:
                     type: boolean
                     example: true       
@@ -407,6 +474,9 @@ paths:
           required: true
           schema:
             type: string
+            pattern: "^[a-zA-Z0-9_-]+$"
+            minLength: 1
+            maxLength: 50
           description: Group ID.
       requestBody:
         description: User to be added to the group.
@@ -414,11 +484,15 @@ paths:
         content:
           application/json:
             schema:
+              description: Adding a user to a group
               type: object
               properties:
                 userId:
                   type: string
                   description: User ID of the person to add to the group.
+                  minLength: 1
+                  maxLength: 50
+                  pattern: "^[a-zA-Z0-9_-]+$"
                   example: "user123"
       responses:
         '200':
@@ -426,8 +500,10 @@ paths:
           content:
             application/json:
               schema:
+                description: The success status of the user adding
                 type: object
                 properties:
+                  description: User added successfully
                   success:
                     type: boolean
                     example: true
@@ -445,6 +521,9 @@ paths:
           required: true
           schema:
             type: string
+            pattern: "^[a-zA-Z0-9_-]+$"
+            minLength: 1
+            maxLength: 50
           description: Group ID.
       requestBody:
         description: New name for the group.
@@ -452,6 +531,7 @@ paths:
         content:
           application/json:
             schema:
+              description: Updating the name of a group
               type: object
               properties:
                 name:
@@ -459,6 +539,7 @@ paths:
                   description: New name for the group.
                   minLength: 3
                   maxLength: 100
+                  pattern: "^[a-zA-Z0-9_-]+$"
                   example: "New Group Name"
       responses:
         '200':
@@ -466,8 +547,10 @@ paths:
           content:
             application/json:
               schema:
+                description: The success status of the group name update
                 type: object
                 properties:
+                  description: Group name updated successfully
                   success:
                     type: boolean
                     example: true
@@ -485,6 +568,9 @@ paths:
           required: true
           schema:
             type: string
+            pattern: "^[a-zA-Z0-9_-]+$"
+            minLength: 1
+            maxLength: 50
           description: Group ID to leave
       responses:
         '200':
@@ -492,8 +578,10 @@ paths:
           content:
             application/json:
               schema:
+                description: The success status of the group leaving
                 type: object
                 properties:
+                  description: Left group successfully
                   success:
                     type: boolean
                     example: true
@@ -511,6 +599,9 @@ paths:
           required: true
           schema:
             type: string
+            pattern: "^[a-zA-Z0-9_-]+$"
+            minLength: 1
+            maxLength: 50
           description: Group ID
       requestBody:
         description: Group photo upload
@@ -518,19 +609,26 @@ paths:
         content:
           multipart/form-data:
             schema:
+              description: Uploading a group photo
               type: object
               properties:
+                description: The group photo to be uploaded
                 photo:
                   type: string
                   format: binary
+                  minLength: 1
+                  maxLength: 10000000
+                  pattern: ".+"
       responses:
         '200':
           description: Group photo updated successfully
           content:
             application/json:
               schema:
+                description: The success status of the group photo update
                 type: object
                 properties:
+                  description: Group photo updated successfully
                   success:
                     type: boolean
                     example: true
