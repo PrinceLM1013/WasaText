@@ -126,9 +126,9 @@ paths:
                 description: The user identifier after a successful log-in.
                 type: object
                 properties:
-                  description: A unique identifier for the user
                   identifier:
                     type: string
+                    description: A unique identifier for the user
                     pattern: "^[a-zA-Z0-9_-]{12}$"
                     minLength: 12
                     example: "abcdef012345"
@@ -165,9 +165,9 @@ paths:
                 description: The success status of the name update
                 type: object
                 properties:
-                  description: Name update successful
                   success:
                     type: boolean
+                    description: Name update successful
                     example: true
         '400':
           description: Username already exists
@@ -177,7 +177,6 @@ paths:
                 description: The error message explaining the username already exists
                 type: object
                 properties:
-                  description: Username already exists
                   error:
                     type: string
                     description: Error message explaining the issue.
@@ -199,9 +198,9 @@ paths:
               description: Uploading a profile photo
               type: object
               properties:
-                description: The profile photo to be uploaded
                 photo:
                   type: string
+                  description: The profile photo to be uploaded
                   format: binary
                   minLength: 1
                   maxLength: 10000000
@@ -215,9 +214,9 @@ paths:
                 description: Photo update successful
                 type: object
                 properties:
-                  description: The success status of the photo update
                   success:
                     type: boolean
+                    description: The success status of the phot update
                     example: true
 
   /conversations:
@@ -279,7 +278,6 @@ paths:
               description: Sending a new message
               type: object
               properties:
-                description: The conversation ID where the message will be sent and content of the message
                 conversationId:
                   type: string
                   description: Conversation ID where the message will be sent.
@@ -303,9 +301,9 @@ paths:
                 description: Message sent successfully
                 type: object
                 properties:
-                  description: The success status of the message sending
                   success:
                     type: boolean
+                    description: The success status of the message sending
                     example: true
 
   /messages/{id}/forward:
@@ -350,9 +348,9 @@ paths:
                 description: The success status of the message forwarding
                 type: object
                 properties:
-                  description: Message forwarded successfully
                   success:
                     type: boolean
+                    description: Message forwarded successfully
                     example: true
 
   /messages/{id}/comment:
@@ -397,9 +395,9 @@ paths:
                 description: The success status of the like adding
                 type: object
                 properties:
-                  description: Like added successfully
                   success:
                     type: boolean
+                    description: Like added successfully
                     example: true
     delete:
       tags:
@@ -425,9 +423,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  description: Like removed successfully
                   success:
                     type: boolean
+                    description: Like removed successfully
                     example: true
                     
   /messages/{id}/delete:
@@ -456,9 +454,9 @@ paths:
                 description: The success status of the message deletion
                 type: object
                 properties:
-                  description: Message deleted successfully
                   success:
                     type: boolean
+                    description: Message deleted successfully
                     example: true       
                     
   /groups/{id}/add:
@@ -503,9 +501,9 @@ paths:
                 description: The success status of the user adding
                 type: object
                 properties:
-                  description: User added successfully
                   success:
                     type: boolean
+                    description: User added successfully
                     example: true
   
   /groups/{id}/name:
@@ -550,9 +548,9 @@ paths:
                 description: The success status of the group name update
                 type: object
                 properties:
-                  description: Group name updated successfully
                   success:
                     type: boolean
+                    description: Group name updated successfully
                     example: true
 
   /groups/{id}/leave:
@@ -581,9 +579,9 @@ paths:
                 description: The success status of the group leaving
                 type: object
                 properties:
-                  description: Left group successfully
                   success:
                     type: boolean
+                    description: Left group successfully
                     example: true
 
   /groups/{id}/photo:
@@ -612,9 +610,9 @@ paths:
               description: Uploading a group photo
               type: object
               properties:
-                description: The group photo to be uploaded
                 photo:
                   type: string
+                  description: The group photo to be uploaded
                   format: binary
                   minLength: 1
                   maxLength: 10000000
@@ -628,7 +626,7 @@ paths:
                 description: The success status of the group photo update
                 type: object
                 properties:
-                  description: Group photo updated successfully
                   success:
                     type: boolean
+                    description: Group photo updated successfully
                     example: true

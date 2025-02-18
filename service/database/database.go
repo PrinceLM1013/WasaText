@@ -34,6 +34,16 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"crypto/sha256"
+	_ "embed"
+	"encoding/hex"
+	"encoding/json"
+	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/PrinceLM1013/WasaText/tree/main/service/api/reqcontext"
+
 )
 
 // AppDatabase is the high level interface for the DB
@@ -42,7 +52,34 @@ type AppDatabase interface {
 	SetName(name string) error
 
 	Ping() error
+
+	// Session and User management
+	CreateUser(userName string, w http.ResponseWriter, ctx reqcontext.RequestContext)
+	Authorize(username string, token string, w http.ResponseWriter, ctx reqcontext.RequestContext) (is_valid bool)
+	ChangeUserName(newName string, username string, w http.ResponseWriter, ctx reqcontext.RequestContext)
+	UpPhoto(username string, fileBytes []byte, w http.ResponseWriter, ctx reqcontext.RequestContext)
+
+	// Conversations
+	GetMyConversations(username string, w http.ResponseWriter, ctx reqcontext.RequestContext)
+	GetConversation(username string, conversationID string, w http.ResponseWriter, ctx reqcontext.RequestContext)
+	
+	// Messages
+	SendMessage(username string, content string, conversationID string, w http.ResponseWriter, ctx reqcontext.RequestContext)
+	ForwardMessage(username string, messageID string, conversationID string, w http.ResponseWriter, ctx reqcontext.RequestContext)
+	CommentMessage(username string, messageID string, comment string, w http.ResponseWriter, ctx reqcontext.RequestContext)
+	UncommentMessage(username string, messageID string, commentID string, w http.ResponseWriter, ctx reqcontext.RequestContext)
+	DeleteMessage(username string, messageID string, w http.ResponseWriter, ctx reqcontext.RequestContext)
+
+	// Group management
+	LeaveGroup(username string, groupID string, w http.ResponseWriter, ctx reqcontext.RequestContext)
+	SetGroupPhoto(username string, groupID string, fileBytes []byte, w http.ResponseWriter, ctx reqcontext.RequestContext)
+	AddToGroup(username string, groupID string, newMember string, w http.ResponseWriter, ctx reqcontext.RequestContext)
+	SetGroupName(username string, groupID string, newName string, w http.ResponseWriter, ctx reqcontext.RequestContext)
+
 }
+
+var writeErr = "error writing response"
+var rowErr = `{"error": "Failed to scan row", "ERR": "`
 
 type appdbimpl struct {
 	c *sql.DB
@@ -65,6 +102,9 @@ func New(db *sql.DB) (AppDatabase, error) {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
 		}
 	}
+	query := `
+			CREATE TABLE IF NOT EXISTS user
+	`
 
 	return &appdbimpl{
 		c: db,
