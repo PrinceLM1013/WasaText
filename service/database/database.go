@@ -32,18 +32,12 @@ package database
 
 import (
 	"database/sql"
+	_ "embed"
 	"errors"
 	"fmt"
-	"crypto/sha256"
-	_ "embed"
-	"encoding/hex"
-	"encoding/json"
 	"net/http"
-	"strconv"
-	"time"
 
-	"github.com/PrinceLM1013/WasaText/tree/main/service/api/reqcontext"
-
+	"github.com/PrinceLM1013/WasaText/service/api/reqcontext"
 )
 
 // AppDatabase is the high level interface for the DB
@@ -62,7 +56,7 @@ type AppDatabase interface {
 	// Conversations
 	GetMyConversations(username string, w http.ResponseWriter, ctx reqcontext.RequestContext)
 	GetConversation(username string, conversationID string, w http.ResponseWriter, ctx reqcontext.RequestContext)
-	
+
 	// Messages
 	SendMessage(username string, content string, conversationID string, w http.ResponseWriter, ctx reqcontext.RequestContext)
 	ForwardMessage(username string, messageID string, conversationID string, w http.ResponseWriter, ctx reqcontext.RequestContext)
@@ -75,7 +69,6 @@ type AppDatabase interface {
 	SetGroupPhoto(username string, groupID string, fileBytes []byte, w http.ResponseWriter, ctx reqcontext.RequestContext)
 	AddToGroup(username string, groupID string, newMember string, w http.ResponseWriter, ctx reqcontext.RequestContext)
 	SetGroupName(username string, groupID string, newName string, w http.ResponseWriter, ctx reqcontext.RequestContext)
-
 }
 
 var writeErr = "error writing response"
